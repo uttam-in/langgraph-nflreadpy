@@ -201,21 +201,33 @@ def format_conversation_history(conversation_history: List[Dict]) -> str:
     if not conversation_history:
         return "No previous conversation."
     
-    # Get last 3 turns for context
-    recent_turns = conversation_history[-3:] if len(conversation_history) >= 3 else conversation_history
+    # Get last 5 turns for better context on follow-up questions
+    recent_turns = conversation_history[-5:] if len(conversation_history) >= 5 else conversation_history
     
     formatted = []
-    for turn in recent_turns:
+    for i, turn in enumerate(recent_turns, 1):
         user_query = turn.get('user_query', '')
         bot_response = turn.get('bot_response', '')
+        mentioned_players = turn.get('mentioned_players', [])
+        mentioned_stats = turn.get('mentioned_stats', [])
         
         if user_query:
-            formatted.append(f"User: {user_query}")
+            formatted.append(f"Turn {i} - User: {user_query}")
         if bot_response:
-            # Truncate long responses
-            if len(bot_response) > 200:
-                bot_response = bot_response[:200] + "..."
-            formatted.append(f"Assistant: {bot_response}")
+            # Truncate long responses but keep key info
+            if len(bot_response) > 300:
+                bot_response = bot_response[:300] + "..."
+            formatted.append(f"Turn {i} - Assistant: {bot_response}")
+        
+        # Add context about what was discussed
+        if mentioned_players or mentioned_stats:
+            context_parts = []
+            if mentioned_players:
+                context_parts.append(f"Players: {', '.join(mentioned_players)}")
+            if mentioned_stats:
+                context_parts.append(f"Stats: {', '.join(mentioned_stats)}")
+            formatted.append(f"  [Context: {' | '.join(context_parts)}]")
+        
         formatted.append("")
     
     return "\n".join(formatted)
@@ -270,20 +282,25 @@ PLAYER STATISTICS:
     # Add conversation context
     if conversation_history:
         history_str = format_conversation_history(conversation_history)
-        prompt += f"\n\nRECENT CONVERSATION:\n{history_str}\n"
+        prompt += f"\n\nRECENT CONVERSATION HISTORY:\n{history_str}\n"
+        prompt += "\n**IMPORTANT**: This is a follow-up question. Use the conversation history above to:\n"
+        prompt += "- Understand references like 'he', 'his', 'that player', 'them', etc.\n"
+        prompt += "- Maintain continuity with previous answers\n"
+        prompt += "- Build upon previously discussed topics\n"
+        prompt += "- Reference earlier statistics when relevant\n\n"
     
     prompt += """
 
 INSTRUCTIONS FOR GENERATING INSIGHTS:
 
-1. **Cite Specific Data**: Always reference actual numbers from the statistics provided
-2. **Provide Context**: Compare to league averages, historical performance, or other relevant benchmarks when possible
-3. **Highlight Trends**: Identify notable patterns, improvements, or declines in performance
-4. **Explain Significance**: Don't just state numbers - explain what they mean and why they matter
-5. **Use Comparisons**: When comparing players, use percentage differences and absolute values
-6. **Be Conversational**: Write in a natural, engaging tone while maintaining accuracy
-7. **Structure Clearly**: Use bullet points or short paragraphs for readability
-8. **Maintain Context**: Reference previous conversation if this is a follow-up question
+1. **Maintain Conversation Context**: If there's conversation history, this is a follow-up question. Reference previous topics naturally and resolve pronouns using the history.
+2. **Cite Specific Data**: Always reference actual numbers from the statistics provided
+3. **Provide Context**: Compare to league averages, historical performance, or other relevant benchmarks when possible
+4. **Highlight Trends**: Identify notable patterns, improvements, or declines in performance
+5. **Explain Significance**: Don't just state numbers - explain what they mean and why they matter
+6. **Use Comparisons**: When comparing players, use percentage differences and absolute values
+7. **Be Conversational**: Write in a natural, engaging tone while maintaining accuracy
+8. **Structure Clearly**: Use bullet points or short paragraphs for readability
 
 FORMATTING GUIDELINES:
 - Use percentage changes when comparing (e.g., "15% more yards")

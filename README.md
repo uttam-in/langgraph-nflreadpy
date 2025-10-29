@@ -4,11 +4,15 @@ A conversational AI system for querying and analyzing NFL player statistics usin
 
 ## Features
 
-- Natural language queries about NFL player statistics
-- Multi-player comparisons across various metrics
-- Conversation context for follow-up questions
-- Access to historical (1999-2023) and current season data
-- Contextual insights with league averages and trends
+- **Natural language queries** about NFL player statistics
+- **Multi-player comparisons** across various metrics
+- **🆕 Conversation memory** - Ask follow-up questions naturally using pronouns and context
+  - Remembers last 10 conversation turns
+  - Resolves pronouns like "he", "his", "them"
+  - Understands implicit references ("What about week 10?")
+  - Maintains context across multiple questions
+- **Access to live and historical data** (1999-2024)
+- **Contextual insights** with league averages and trends
 - **Multi-layer caching system** for improved performance
   - In-memory Kaggle dataset cache
   - TTL-based nflreadpy data cache (24-hour expiration)
@@ -138,11 +142,40 @@ See [CACHING.md](CACHING.md) for detailed documentation.
 
 ## Usage Examples
 
-Ask questions like:
+### Basic Queries
 - "How did Patrick Mahomes perform in 2023?"
 - "Compare Josh Allen and Joe Burrow passing yards"
 - "Show me the top receivers by yards this season"
 - "What was Travis Kelce's EPA last year?"
+
+### 🆕 Follow-up Questions (Using Conversation Memory)
+The chatbot now remembers your conversation and can handle natural follow-ups:
+
+```
+You: What were Patrick Mahomes' passing yards in week 10 of 2024?
+Bot: [provides stats]
+
+You: How many touchdowns did he throw?
+Bot: [remembers "he" = Patrick Mahomes, provides TD stats]
+
+You: What about his completion rate?
+Bot: [continues with same player and context]
+
+You: Compare him to Josh Allen
+Bot: [compares both players in week 10]
+```
+
+**See [FOLLOW_UP_QUESTIONS_GUIDE.md](FOLLOW_UP_QUESTIONS_GUIDE.md) for more examples and tips!**
+
+## Conversation Memory
+
+The chatbot maintains context across your conversation:
+- **Remembers**: Last 10 conversation turns
+- **Resolves**: Pronouns (he, his, them) and implicit references
+- **Continues**: Topics naturally without repeating information
+- **Resets**: When you start a new session
+
+For detailed information, see [CONVERSATION_MEMORY.md](CONVERSATION_MEMORY.md)
 
 ## Development Status
 

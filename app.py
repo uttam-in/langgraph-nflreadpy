@@ -87,6 +87,11 @@ async def start():
     welcome_msg = await cl.Message(
         content="Welcome to the NFL Player Performance Chatbot! 🏈\n\n"
                 "Powered by live data from nflreadpy so you can ask about the latest games and stats.\n\n"
+                "**✨ New: Conversation Memory!**\n"
+                "I now remember our conversation and can handle follow-up questions:\n"
+                "- Use pronouns like 'he', 'his', 'them'\n"
+                "- Ask 'What about week 10?' without repeating the player name\n"
+                "- Say 'Compare them' to compare previously mentioned players\n\n"
                 "**Try asking questions like:**\n"
                 f"{sample_queries_text}\n\n"
                 "What would you like to know?"
@@ -171,7 +176,10 @@ async def main(message: cl.Message):
         logger.info("Invoking LangGraph workflow")
         
         # Update processing indicator
-        processing_msg.content = "🔍 Analyzing your question..."
+        if conversation_history:
+            processing_msg.content = "🔍 Analyzing your question (using conversation context)..."
+        else:
+            processing_msg.content = "🔍 Analyzing your question..."
         await processing_msg.update()
         
         # Execute workflow

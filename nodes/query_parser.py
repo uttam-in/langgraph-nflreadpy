@@ -228,16 +228,27 @@ Parse the following user query and extract:
 6. Whether this is a comparison between players
 7. The query intent (player_stats, comparison, ranking, trend_analysis)
 
-IMPORTANT CONTEXT RESOLUTION:
-- If the query uses pronouns (he, his, him, they) or references like "that player", "same stat", resolve them using the conversation context below.
-- If the query says "compare them" or "how about", it likely refers to previously mentioned players.
+IMPORTANT CONTEXT RESOLUTION FOR FOLLOW-UP QUESTIONS:
+- If the query uses pronouns (he, his, him, they, their) or references like "that player", "same stat", "those stats", resolve them using the conversation context below.
+- If the query says "compare them", "how about", "what about", "and him", it likely refers to previously mentioned players.
+- For questions like "what about his rushing yards?" or "how many touchdowns?", infer the player from recent context.
+- For questions like "in week 10?" or "last season?", this is likely asking about the same player(s) from the previous question.
+- If no explicit player is mentioned but context exists, use the most recently discussed player(s).
+- Treat follow-up questions as continuations of the conversation, not isolated queries.
 """
 
-    if context["recent_players"]:
-        prompt += f"\n\nRecently mentioned players: {', '.join(context['recent_players'])}"
-    
-    if context["recent_stats"]:
-        prompt += f"\nRecently mentioned statistics: {', '.join(context['recent_stats'])}"
+    if context["recent_players"] or context["recent_stats"]:
+        prompt += "\n\n**CONVERSATION CONTEXT (Use this to resolve references):**"
+        
+        if context["recent_players"]:
+            prompt += f"\n- Recently mentioned players: {', '.join(context['recent_players'])}"
+            prompt += "\n  → If the query doesn't mention a player explicitly, assume it refers to these players"
+        
+        if context["recent_stats"]:
+            prompt += f"\n- Recently mentioned statistics: {', '.join(context['recent_stats'])}"
+            prompt += "\n  → If the query asks about 'those stats' or similar, use these"
+        
+        prompt += "\n\n**This appears to be a follow-up question. Use the context above to fill in missing information.**"
     
     prompt += f"""
 
