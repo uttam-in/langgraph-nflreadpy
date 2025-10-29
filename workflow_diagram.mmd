@@ -1,0 +1,28 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	entry(entry)
+	query_parser(query_parser)
+	retriever(retriever)
+	llm(llm)
+	memory(memory)
+	exit(exit)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> entry;
+	entry -.-> exit;
+	entry -.-> query_parser;
+	llm -.-> exit;
+	llm -.-> memory;
+	memory --> exit;
+	query_parser -.-> exit;
+	query_parser -.-> retriever;
+	retriever -.-> exit;
+	retriever -.-> llm;
+	exit --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
